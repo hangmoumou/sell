@@ -2,7 +2,8 @@
   <div class="goods">
     <div class="menu-wrapper" v-el:menu-wrapper>
       <ul>
-        <li v-for="item in goods" class="menu-item">
+        <li v-for="item in goods" class="menu-item" :class="{'current':currentIndex===$index}"
+            @click="selectMenu($index,$event)">
           <span class="text border-1px">
             <span v-show="item.type>0" class="icon" :class="classMap[item.type]"</span><span>{{item.name}}</span>
         </li>
@@ -47,8 +48,22 @@
       },
       data() {
         return {
-          goods: []
+          goods: [],
+          listHeight: [],
+          scrollY: 0
         };
+      },
+      computed: {
+        currentIndex() {
+          for (let i = 0; i<this.listHeight.length; i++) {
+            let height1 = this.listHeight[i];
+            let height2 = this.listHeight[i + 1];
+            if(!height2 || (this.scrollY >= height1 && this.scrollY <height2)){
+              return i;
+            }
+          }
+          return 0;
+        }
       },
       created() {
         this.classMap = ['decrease','discount', 'special', 'special', 'invoice', 'guarantee'];
@@ -58,15 +73,41 @@
           if(response.errno === ERR_Ok) {
             this.goods = response.data;
             this.$nextTick(() => {
-              this._initScroll();
+              this.initScroll();
+              this.calculateHeight();
             })
           }
         });
       },
-    methods: {
+    methods:  {
+      selectMenu(index, event) {
+        if(!event._constructed) {
+          return;
+        }
+        let foodList = this.$els.foodsWrapper.getElementByClassName('food-list-hook');
+        let el = foodList[index];
+        this.foodsScroll.scrollToElement(el, 300);
+      },
       initScroll() {
-        this.menuScroll = new BScroll(this.$els.foodWrapper, {});
-        this.foodsScroll = new BScroll(this.$els.foodsWrapper, {});
+        this.menuScroll = new BScroll(this.$els.menuWrapper, {
+          click: true
+        });
+        this.foodsScroll = new BScroll(this.$els.foodsWrapper, {
+          probeType: 3
+        });
+        this.foodsScroll.on("scroll", (pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y));
+        });
+      },
+      calculateHeight() {
+        let foodList = this.$els.foodsWrapper.getElementsByClassName('food-list-hook');
+        let height = 0;
+        this.listHeight.push(height);
+        for(let i = 0;i < foodList.length; i++) {
+          let item = foodList[i];
+          height += item.clientHeight;
+          this.listHeight.push(height);
+        }
       }
     }
 </script>
@@ -89,25 +130,32 @@
         width: 56px
         padding: 0 12px
         line-height: 14px
+        &.current
+          position: relative
+          z-index: 10
+          margin-top: -1px
+          background: #fff
+          font-weight: 700px
+          .text
+            border-none()
         .icon
-          .icon
-            display: inline-block
-            vertical-align: top
-            width: 12px
-            height: 12px
-            margin-right: 2px
-            background-size: 12px 12px
-            background-repaet: no-repeat
-            &.decrease
-              bg-image('decrease_3')
-            &.discount
-              bg-image('discount_3')
-            &.guarantee
-              bg-image('gurantee_1')
-            &.invoice
-              bg-image('invoice_3')
-            &.special
-              bg-image('special_3')
+          display: inline-block
+          vertical-align: top
+          width: 12px
+          height: 12px
+          margin-right: 2px
+          background-size: 12px 12px
+          background-repaet: no-repeat
+          &.decrease
+            bg-image('decrease_3')
+          &.discount
+            bg-image('discount_3')
+          &.guarantee
+            bg-image('gurantee_1')
+          &.invoice
+            bg-image('invoice_3')
+          &.special
+            bg-image('special_3')
           .text
             display: table-cell
             width: 56px

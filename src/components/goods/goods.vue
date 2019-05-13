@@ -33,7 +33,7 @@
         </li>
       </ul>
     </div>
-    <shopcart></shopcart>
+    <shopcart :delivery-price="seller.deliverPrice" :min-pice="seller.minPrice"></shopcart>
   </div>
 </template>
 

@@ -36,7 +36,7 @@
         </li>
       </ul>
     </div>
-    <shopcart :delivery-price="seller.deliverPrice" :min-pice="seller.minPrice"></shopcart>
+    <shopcart v-ref:shopcart :select-foods="selectFoods" :delivery-price="seller.deliverPrice" :min-pice="seller.minPrice"></shopcart>
   </div>
 </template>
 
@@ -69,8 +69,18 @@
             }
           }
           return 0;
-        }
       },
+        selectFoods() {
+          this.goods.forEach((good) => {
+            good.foods.forEach((food) => {
+              if(food.count) {
+                foods.push(food);
+              }
+            });
+          };
+          return foods;
+        }
+      }，
       created() {
         this.classMap = ['decrease', 'discount', 'special', 'special', 'invoice', 'guarantee'];
         this.$http.get('/api/goods').then((response) => {
@@ -92,6 +102,9 @@
           let foodList = this.$els.foodsWrapper.getElementByClassName('food-list-hook');
           let el = foodList[index];
           this.foodsScroll.scrollToElement(el, 300);
+        },
+        drop(target) {
+          this.$refs.shopcart.drop(target);
         },
         initScroll() {
           this.menuScroll = new BScroll(this.$els.menuWrapper, {
@@ -118,6 +131,11 @@
       components: {
         shopcart,
         cartcontrol
+      },
+      events: {
+        'cart.add'(target){
+          this._drop(target);
+        }
       }
     }
 </script>
@@ -221,7 +239,6 @@
                   text-decoration: line-through
                   font-size: 10px
                   color: rgb(147, 153, 159)
-
               .cartcontrol-wrapper
                 position: absolute
                 right: 0

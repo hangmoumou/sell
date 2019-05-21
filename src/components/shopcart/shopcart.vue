@@ -17,6 +17,11 @@
         </div>
       </div>
     </div>
+    <div class="ball-container">
+      <div trnasition="drop" class="ball" v-for="ball in balls" v-show="ball.show">
+        <div class="inner inner-hook"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -44,6 +49,28 @@
         default: 0
       }
     },
+    data() {
+      return {
+        balls: [
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          }
+        ],
+        dropBall: []
+      };
+    },
     computed:  {
       totalPrice() {
         let total = 0;
@@ -69,12 +96,53 @@
           return '去结算'；
         }
       }
-    },
     payClass() {
       if(this.totalPrice< this.minPrice) {
         return 'not-enough';
       }else{
         return 'enough';
+      }
+    }
+  },
+    methods: {
+      drop(el) {
+        for(let i=0; i<this.balls.length; i++) {
+          let ball = this.balls[i];
+          if(!ball.show) {
+            ball.show = true;
+            ball.el = el;
+            this.dropBall.push(ball);
+            return;
+          }
+        }
+      }
+    }，
+    transitions: {
+      drop: {
+        beforeEnter(el) {
+          let count = this.balls.length;
+          while (count--) {
+            let ball = this.balls[count];
+            if (ball.show) {
+              let rect = ball.el.getBoundingClientReact();
+              let x = rect.left - 32;
+              let y = -(window.innerHeight - rect.top - 22);
+              el.style.display = '';
+              el.style.webkitTransform = `translate3d(0, ${y}px, 0)`;
+              el.style.transform = `translate3d(0, ${y},0)`;
+              let inner = el.getElementByClassName('inner-hook')[0];
+              inner.style.webkitTransform = `translate3d(${x}px,0,0)`;
+              inner.style.transform = `translate3d(${x}px)`
+
+            }
+          }
+        },
+        enter(el) {
+
+        },
+        afterEnter(el) {
+
+        }
       }
     }
   }
@@ -163,4 +231,19 @@
           &.enough
             background: #00b43c
             color: #fff
+    .ball-container
+      .ball
+        position: fixed
+        left: 32px
+        bottom: 22px
+        z-index: 200
+        &.drop-transition
+          transition: all 0.4s
+          .inner
+            width: 16px
+            height: 16px
+            border-radius: 50%
+            background: rgb(0, 160, 220)
+            transition: all 0.4s
+
 </style>
